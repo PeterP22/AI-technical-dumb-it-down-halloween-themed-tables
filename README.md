@@ -8,3 +8,4 @@ A dynamic tool that generates a Matrix-themed HTML table translating complex AI 
 - Responsive table design with animated scan lines
 - Timestamp-based file generation for tracking different outputs
 
+![AI Translation Matrix Output](output.png)
