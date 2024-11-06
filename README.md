@@ -1,11 +1,10 @@
-# 🎃 AI Buzzword Translation Matrix Generator
+# AI Technical Language Matrix Generator 🤖
 
-A spooky, Matrix-inspired table generator that transforms complex AI terminology into plain English. Perfect for making technical discussions more accessible while maintaining that cool cyberpunk aesthetic.
+A dynamic tool that generates a Matrix-themed HTML table translating complex AI technical terms into simple, human-friendly explanations. Each run produces fresh, LLM-generated content using the Groq API.
 
-## 🖥️ Features
+## 🚀 Features
+- Dynamic content generation using Groq's LLM (llama3-8b-8192)
+- Matrix-themed styling with glowing green text and hover effects
+- Responsive table design with animated scan lines
+- Timestamp-based file generation for tracking different outputs
 
-- **Matrix-Style Design**: Dark theme with neon green accents
-- **Interactive Elements**: Hover effects and animations
-- **Responsive Layout**: Clean table formatting that works across devices
-- **Technical Translation**: 20+ common AI buzzwords simplified
-- **Halloween-Themed**: Spooky tech vibes with a hacker aesthetic

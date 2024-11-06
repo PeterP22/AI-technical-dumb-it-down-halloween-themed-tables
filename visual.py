@@ -1,57 +1,63 @@
 import pandas as pd
+from groq import Groq
+import os
+from datetime import datetime
 
-# Convert the table content into structured data
-data = {
-    'Instead of Saying...': [
-        "We're implementing Autogen",
-        "Foundation Models are our base",
-        "We're integrating YOLO Models",
-        "Let's set up an Auto Labelling Pipeline",
-        "Multimodal AI systems are key",
-        "We'll deploy AI Copilot for assistance",
-        "Adapters will fine-tune our AI",
-        "Agentic AI for independent operations",
-        "Knowledge Graph for data connection",
-        "Large Language Models (LLM) for tasks",
-        "AutoML for model optimization",
-        "Hallucinations need to be addressed",
-        "Generative AI for content creation",
-        "Open Models vs Proprietary Models",
-        "Cloud Native for AI deployment",
-        # Additional relevant examples
-        "We're implementing RAG architecture",
-        "Vector DB integration required",
-        "Implementing few-shot learning",
-        "Deploying model quantization",
-        "Implementing semantic search"
-    ],
-    'Say...': [
-        "We're using a system to automatically generate code or content based on predefined rules or AI-driven insights",
-        "We're starting with large-scale models pre-trained on vast datasets to adapt to a wide array of tasks quickly",
-        "We're using real-time object detection models like YOLO for high-speed, high-accuracy image analysis",
-        "We're creating an automated process to label data, reducing manual labor and enhancing model training efficiency",
-        "We're employing AI models that can understand and generate content across different data types like text, images, and audio for richer interactions",
-        "We're deploying a conversational AI interface to assist users in real-time with various tasks using natural language processing",
-        "We're using small modules to adapt pre-trained models for new tasks without extensive retraining, saving time and resources",
-        "We're developing AI systems that can pursue complex goals autonomously with minimal human supervision",
-        "We'll use a structured representation to show relationships between entities, enhancing AI understanding and context in applications",
-        "We're leveraging models like BERT, GPT-4 for various language-related tasks due to their deep understanding of language context",
-        "We're automating the machine learning workflow to select, preprocess data, and tune models for optimal performance with minimal human input",
-        "We need to mitigate instances where the AI generates incorrect or fabricated information, ensuring model reliability",
-        "We'll use AI to generate new content, whether it's text, images, or other data types, based on learned patterns",
-        "We're considering using models that are openly available with comparable performance to proprietary ones for flexibility in deployment",
-        "We're deploying our AI solutions on cloud-native platforms like Kubernetes for scalability and efficiency in managing AI model lifecycle",
-        # Additional explanations
-        "We're enhancing our AI's responses by combining them with relevant information from our knowledge base",
-        "We're setting up a specialized database to efficiently store and search through AI-processed information",
-        "We're teaching our AI to learn new tasks with just a few examples instead of massive datasets",
-        "We're optimizing our AI models to run faster and use less memory while maintaining accuracy",
-        "We're implementing advanced search that understands meaning rather than just matching keywords"
-    ]
-}
+def generate_ai_translations(num_entries=5):
+    client = Groq(
+        api_key=os.environ.get("GROQ_API_KEY")
+    )
+    
+    prompt = """Generate a list of {num_entries} pairs of technical AI terms and their simplified explanations. 
+    Each pair should include a complex technical AI term or phrase and its clear, simple explanation for non-technical stakeholders.
+    
+    Format each pair as:
+    Technical: [complex AI term or phrase]
+    Simple: [clear, simple explanation]
+    
+    Make sure each term is:
+    1. A real AI/ML concept or technology
+    2. Something commonly used in technical discussions
+    3. Explained in plain language without jargon
+    4. Different from previous entries
+    """
 
-# Create DataFrame
-df = pd.DataFrame(data)
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt.format(num_entries=num_entries),
+            }
+        ],
+        model="llama3-8b-8192",  # Updated to use the latest Llama 3 model
+        stream=False,
+    )
+
+    # Parse response
+    content = chat_completion.choices[0].message.content
+    lines = content.split('\n')
+    
+    technical_terms = []
+    simple_explanations = []
+    
+    current_term = None
+    for line in lines:
+        if line.strip():
+            if line.startswith('Technical:'):
+                current_term = line.replace('Technical:', '').strip()
+            elif line.startswith('Simple:') and current_term:
+                explanation = line.replace('Simple:', '').strip()
+                technical_terms.append(current_term)
+                simple_explanations.append(explanation)
+                current_term = None
+
+    # Create DataFrame
+    data = {
+        'Instead of Saying...': technical_terms,
+        'Say...': simple_explanations
+    }
+    
+    return pd.DataFrame(data)
 
 # Style the table with hacker theme
 def style_df(df):
@@ -82,11 +88,14 @@ def style_df(df):
     ])
 
 # Apply styling
-styled_df = style_df(df)
+styled_df = style_df(generate_ai_translations())
 
 # Save to HTML with additional CSS
+timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+filename = f'ai_translation_matrix_{timestamp}.html'
+
 html = styled_df.to_html(index=False)
-with open('ai_translation_matrix.html', 'w', encoding='utf-8') as f:
+with open(filename, 'w', encoding='utf-8') as f:
     css = """
     <style>
     body {
@@ -146,3 +155,5 @@ with open('ai_translation_matrix.html', 'w', encoding='utf-8') as f:
     <div class="title">AI Technical Language Translation Matrix</div>
     """
     f.write(css + html)
+
+print(f"File saved as: {filename}")
